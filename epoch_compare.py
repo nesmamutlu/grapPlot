@@ -3,8 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Old folder names and new names
-folders_old = [f'v{i}' for i in range(1, 11)]
-folders_new = ['E5F1', 'E1F5', 'E1F3', 'E1F8', 'E1F10', 'E1F20', 'E1F30', 'E1F50', 'E1F100', 'E0F100']
+folders = [f'v{i}' for i in range(1, 11)]
+labels = ['E5F1', 'E1F5', 'E1F3', 'E1F8', 'E1F10', 'E1F20', 'E1F30', 'E1F50', 'E1F100', 'E0F100']
 
 # Function to reset the plot
 def reset_plot():
@@ -12,32 +12,31 @@ def reset_plot():
     plt.close()  # Close the figure window
 
 # Always reset the data dictionary to ensure we're working with fresh data
-def load_data():
-    data = {}
-    for old_folder, new_folder in zip(folders_old, folders_new):
-        csv_path = os.path.join(old_folder, 'metrics_epoch.csv')
-        
-        if os.path.exists(csv_path):
-            # Read the CSV file
-            df = pd.read_csv(csv_path)
-            
-            # Get the epoch column and the last column, remove the first 10 rows
-            epoch_column = df.columns[0]  # First column where the epoch numbers are stored
-            last_column = df.columns[-1]  # Last column (metrics)
-            
-            # Remove the first 10 rows
-            df_trimmed = df.iloc[10:]
-            
-            # Store the epoch and last column data
-            data[new_folder] = (df_trimmed[epoch_column], df_trimmed[last_column])
-    return data
+#def load_data(folder, skip):
+#    csv_path = os.path.join(folder, 'metrics_epoch.csv')
+# 
+#    if os.path.exists(csv_path):
+#       # Read the CSV file
+#       df = pd.read_csv(csv_path)
+#       
+#       data = df[['epoch', 'validation_e/N_mae']].iloc[skip:]   
+#       return data
 
 # Plotting the updated data
-def plot_data(data):
+def plot_data(skip):
     reset_plot()  # Reset the plot before plotting new data
     plt.figure(figsize=(10, 6))
-    for folder, (epochs, metrics) in data.items():
-        plt.plot(epochs, metrics, label=folder)
+    for i, folder in enumerate(folders):
+        label = labels[i]
+        csv_path = os.path.join(folder, 'metrics_epoch.csv')
+        df = pd.read_csv(csv_path)
+        epoch = df['epoch'].iloc[skip:]
+        validation_e = df['validation_e/N_mae'].iloc[skip:]
+        plt.plot(epoch , validation_e, label=label)
+
+        #data = load_data(folder, 10)
+        #data.plot(x='epoch',
+        #        y='validation_e/N_mae',label=folder)
 
     plt.xlabel('Epochs')
     plt.ylabel('Metric Value')
@@ -45,6 +44,8 @@ def plot_data(data):
     plt.yscale('log')  # Set the y-axis to logarithmic
     plt.legend()
     plt.grid(True)
+    plt.show()
+    quit()
 
     # Save the plot to a file with a unique name
     base_filename = 'epoch_metric_comparison'
@@ -64,6 +65,5 @@ def plot_data(data):
     plt.show()
 
 # Load data, update it, and plot it
-data = load_data()
-plot_data(data)
+plot_data(skip=10)
 
